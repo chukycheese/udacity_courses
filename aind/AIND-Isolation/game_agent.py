@@ -215,14 +215,42 @@ class MinimaxPlayer(IsolationPlayer):
         # TODO: finish this function!
         # raise NotImplementedError
 
-        # 1. Modify the MinimaxPlayer.minimax() method to return any legal move for the active player.
-        # return game.get_legal_moves(self)
+        legal_moves = game.get_legal_moves()
 
-        # 2. Further modify the MinimaxPlayer.minimax() method to implement the full recursive search procedure described in lecture.
-        # Are there any legal moves left for us to play? if not, then we lost!
-        # The maximizing(minimizing) player returns the lowest(highest) possible score.
-        legal_moves = game.legal_moves()
-        if not legal_moves:    # if there is a legal move left,
+        best_score = float('-inf')
+        for move in legal_moves:
+            score = self.min_value(game.forecast_move(move), depth - 1)
+            if score > best_score:
+                best_move = move
+                best_score = score
+        return best_move if best_move else (-1, 1)
+
+        def max_value(self, game, depth):
+            if self.time_left() < self.TIMER_THRESHOLD:
+                raise SearchTimeout()
+
+            if depth == 0:
+                return self.score(game, self)
+            v = float('-inf')
+
+            for move in game.get_legal_moves():
+                v = max(v, self.min_value(game.forecast_move(move), depth - 1))
+
+            return v
+
+        def min_value(self, game, depth):
+
+            if self.time_left() < self.TIMER_THRESHOLD:
+                raise SearchTimeout()
+
+            if depth == 0:
+                return self.score(game, self)
+
+            v = flaot('inf')
+
+            for move in game.get_legal_moves():
+                v = min(v, self.max_value(game.forecast_move(move), depth - 1))
+            return v
 
 
 
