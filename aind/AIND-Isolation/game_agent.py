@@ -35,7 +35,35 @@ def custom_score(game, player):
         The heuristic value of the current game state to the specified player.
     """
     # TODO: finish this function!
-    raise NotImplementedError
+    if game.is_loser(player):
+        return float('-inf')
+
+    if game.is_winner(player):
+        return float('inf')
+
+    """
+    This heuristic focuses on the possibility of limiting future moves for the oppenent.
+    Assign higher evlautation function socre to the state if the possibility of future
+    moves for the opponent is scarsce, and assign lower score if that is not the case.
+    So, we go ahead and put up a recursion, fiding length of set of all the legal moves
+    from the current state, and then going on length of set of legal moves available to
+    from each of these states.
+    """
+    legal_moves = game.get_legal_moves(player)
+    num_moves = len(legal_moves)
+    opp_num_moves = 0
+
+    for move in legal_moves:
+        board = game
+        board = game.forecast_move(move)
+        opp_num_moves += len(board.get_legal_moves())
+    """
+    The weight of 2 with the opposition legal moves means we are penalizing highly
+    for a board state, where the opponent has more move at it's disposal. We will
+    be inclined to choosing the board states in which the opponent is fairly limited
+    in its movements.
+    """
+    return float(num_moves - 2 * opp_num_moves)
 
 
 def custom_score_2(game, player):
@@ -61,7 +89,40 @@ def custom_score_2(game, player):
         The heuristic value of the current game state to the specified player.
     """
     # TODO: finish this function!
-    raise NotImplementedError
+    """
+    This heuristic evaluates a board state two folds, first it scores the board
+    on the number of moves available to the player, with respect to the available
+    moves to the opponent, and if the player has more moves available than the opponent,
+    the the board is assigned a higher score, else the board is penalized. This
+    heuristic also goes ahead and normalizes the difference in moves with the manhattan
+    distance between the player. Takin in account the fact that, if the manhattan distance
+    between the player and the opponent is large, the player will find it hard,
+    to be able to block the moves for the opponent, and hence in this case, the board
+    will be penalized, else rewarded.
+    """
+    if game.is_loser(player):
+        return float('-inf')
+
+    if game.is_winner(player):
+        return float('inf')
+
+    player_legal_moves = game.get_legal_moves(player)
+    opp_legal_moves = game.get_legal_moves(game.get_opponent(player))
+
+    """
+    The weight of 2 with the opposition legal moves means we are penalizing
+    highly for a board state, where the opponent has more moves at its disposal.
+    We will be inclined to choosing the board states in which the opponent is
+    fairly limited in its movements.
+    """
+    difference_in_moves = len(player_legal_moves) - len(opp_legal_moves)
+
+    location_of_player = game.get_player_location(player)
+    location_of_opp = game.get_player_location(game.get_opponent(player))
+
+    manhattan_dist = abs(location_of_player[0] - location_of_opp[0]) + abs(location_of_player[1] - location_of_opp[1])
+
+    return float(difference_in_moves / manhattan_dist)
 
 
 def custom_score_3(game, player):
@@ -87,7 +148,29 @@ def custom_score_3(game, player):
         The heuristic value of the current game state to the specified player.
     """
     # TODO: finish this function!
-    raise NotImplementedError
+    """
+    Run towards
+    Minimize the distance between the player and the opponent, i.e., run towards
+    from the opponent. Returns the negative of the absolute difference between
+    the sum of the location vectors, therefore rewarding smaller absolute differences
+    with higher scores.
+    """
+    if game.is_loser(player):
+        return float('-inf')
+
+    if game.is_winner(player):
+        return float('inf')
+
+    opp_location = game.get_player_location(game.get_opponent(player))
+    if opp_location == None:
+        return 0
+
+    player_location = game.get_player_location(player)
+    if player_location == None:
+        return 0
+
+    return float(-abs(sum(opp_location) - sum(player_location)))
+
 
 
 class IsolationPlayer:
