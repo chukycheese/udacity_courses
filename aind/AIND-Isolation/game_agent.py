@@ -255,9 +255,6 @@ class MinimaxPlayer(IsolationPlayer):
 
 
 
-
-
-
 class AlphaBetaPlayer(IsolationPlayer):
     """Game-playing agent that chooses a move using iterative deepening minimax
     search with alpha-beta pruning. You must finish and test this player to
@@ -300,20 +297,25 @@ class AlphaBetaPlayer(IsolationPlayer):
 
         # Initialize the best move so that this function returns something
         # in case the search fails due to timeout
-        if len(game.get_legal_moves()) == 0:
-            best_move = (-1, -1)
-
         self.time_left = time_left
-        self.depth = 100
+
+        # Initialize legal_moves
+        legal_moves = game.get_legal_moves()
+
+        # Initialize the best move so that this fuction returns something
+        # in case the search fails due to timeout
+        if len(legal_moves) == 0:
+            return (-1, -1)
+
+        best_move = legal_moves[random.randint(0, len(legal_moves) - 1)]
 
         try:
             # The try/except block will automatically catch the exception
             # raised when the timer is about to expire.
-            for depth_limit in range(self.depth):
-                best_move = self.alphabeta(game, depth_limit + 1)
-
-                if best_move == (-1, -1):
-                    break
+            depth = 1
+            while True:
+                best_move = self.alphabeta(game, depth)
+                depth += 1
 
         except SearchTimeout:
             pass  # Handle any actions required after timeout as needed
@@ -378,18 +380,19 @@ class AlphaBetaPlayer(IsolationPlayer):
                 return game.utility(self)
 
             if depth == 0:
-                return self.score(game, self), (-1, -1)
+                return self.score(game, self)
 
             best_move = (-1, -1)
             v = float('-inf')
 
             for move in game.get_legal_moves():
-                v = max(v, min_value(self, game.forecast_move(move), depth - 1, alpha, beta)[0])
+                v = max(v, min_value(self, game.forecast_move(move), depth - 1, alpha, beta))
                 if v >= beta:
-                    alpha = max(alpha, v)
-                    best_move = move
-                    return v, move
-            return v, best_move
+                    return v
+                alpha = max(alpha, v)
+                # best_move = move
+                    # return v, best_move
+            return v
 
         def min_value(self, game, depth, alpha, beta):
             if self.time_left() < self.TIMER_THRESHOLD:
@@ -399,24 +402,41 @@ class AlphaBetaPlayer(IsolationPlayer):
                 return game.utility(self)
 
             if depth == 0:
-                return self.score(game, self), (-1, -1)
+                return self.score(game, self)
 
             best_move = (-1, -1)
-
             v = float('inf')
 
             for move in game.get_legal_moves():
-                v = min(v, max_value(self, game.forecast_move(move), depth - 1, alpha, beta)[0])
-
+                v = min(v, max_value(self, game.forecast_move(move), depth - 1, alpha, beta))
                 if v <= alpha:
-                    beta = min(beta, v)
-                    best_move = move
-                    return v, move
-            return v, best_move
+                    return v
+                beta = min(beta, v)
+                # best_move = move
+                    # return v, best_move
+            return v
 
+        if game.is_loser(self):
+            best_move = (-1, -1)
 
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
+
+        best_score = float('-inf')
+        best_move = None
+
+        for move in game.get_legal_moves():
+            score = max_value(self, game.forecast_move(move), depth - 1, alpha, beta)
+
+            if score > best_score:
+                best_move = move
+                best_score = score
+                # alpha = max(alpha, best_score)
+
+        return best_move
+
+
+
 
         # legal_moves = game.get_legal_moves()
         #
@@ -432,7 +452,3 @@ class AlphaBetaPlayer(IsolationPlayer):
         #         # if beta <= alpha:
         #         #     break
         # return best_move
-
-        v, best_move = max_value(self, game, depth - 1, alpha, beta)
-
-        return best_move
