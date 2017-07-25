@@ -327,6 +327,7 @@ class MinimaxPlayer(IsolationPlayer):
             return v
 
         legal_moves = game.get_legal_moves()
+        best_move = (-1, -1)
 
         best_score = float('-inf')
         for move in legal_moves:
@@ -334,7 +335,8 @@ class MinimaxPlayer(IsolationPlayer):
             if score > best_score:
                 best_move = move
                 best_score = score
-        return best_move if best_move else (-1, -1)
+                
+        return best_move
 
 
 
