@@ -35,7 +35,7 @@ clf.fit(features_train, labels_train, sample_weight=None)
 pred = clf.predict(features_test)
 accuracy = accuracy_score(labels_test, pred, normalize=True, sample_weight=None)
 
-print(accuracy)
+print("Accuracy of Naive Bayes is: ", accuracy)
 
 
 #########################################################
